@@ -25,7 +25,13 @@ type Config struct {
 }
 
 // New initialize mailer
-func New(config *Config) (*Mailer, error) {
+func New(config *Config) (mailer *Mailer) {
+	mailer, _ = NewChecked(config)
+	return
+}
+
+// NewChecked initialize mailer and receive error code
+func NewChecked(config *Config) (*Mailer, error) {
 	if config == nil {
 		config = &Config{}
 	}
