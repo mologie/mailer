@@ -11,19 +11,14 @@ import (
 	"github.com/qor/mailer"
 )
 
-// Sender gomail struct
 type Sender struct {
 	*Config
-
-	Sent []*mailer.Email
 }
 
-// Config gomail config
 type Config struct {
 	Output io.Writer
 }
 
-// New initalize gomail sender with gomail.Dailer
 func New(config *Config) *Sender {
 	if config == nil {
 		config = &Config{}
@@ -36,7 +31,6 @@ func New(config *Config) *Sender {
 	return &Sender{Config: config}
 }
 
-// Send send email with GoMail
 func (sender *Sender) Send(email mailer.Email) error {
 	var result = new(bytes.Buffer)
 
@@ -92,7 +86,8 @@ func (sender *Sender) Send(email mailer.Email) error {
 		fmt.Fprintf(result, "\nContent-Type: text/html; charset=UTF-8\n%v\n", email.HTML)
 	}
 
-	sender.Sent = append(sender.Sent, &email)
+
 	_, err := io.Copy(sender.Output, result)
+
 	return err
 }
