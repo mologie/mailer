@@ -23,7 +23,7 @@ func (tmpl Template) Funcs(funcMap template.FuncMap) Template {
 }
 
 // Render render template
-func (mailer Mailer) Render(t Template) Email {
+func (mailer Mailer) Render(t Template) (Email, error) {
 	var email Email
 
 	if t.funcMap == nil {
@@ -64,5 +64,5 @@ func (mailer Mailer) Render(t Template) Email {
 		}
 	}
 
-	return email
+	return email, nil
 }
