@@ -4,8 +4,6 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
-
-	"github.com/pkg/errors"
 )
 
 // Template email template
@@ -25,7 +23,7 @@ func (tmpl Template) Funcs(funcMap template.FuncMap) Template {
 }
 
 // Render render template
-func (mailer Mailer) Render(t Template) (*Email, error) {
+func (mailer Mailer) Render(t Template) Email {
 	var email Email
 
 	if t.funcMap == nil {
@@ -45,46 +43,26 @@ func (mailer Mailer) Render(t Template) (*Email, error) {
 	}
 
 	if t.Layout != "" {
-		result, err := mailer.Config.Render.Layout(t.Layout+".text").Funcs(t.funcMap).Render(t.Name+".text", t.Data, t.Request, t.Writer)
-		if err != nil {
-			return nil, errors.Wrap(err, "mail/render layout (txt) failed")
+		if result, err := mailer.Config.Render.Layout(t.Layout+".text").Funcs(t.funcMap).Render(t.Name+".text", t.Data, t.Request, t.Writer); err == nil {
+			email.Text = string(result)
 		}
-		email.Text = string(result)
 
-		result, err = mailer.Config.Render.Layout(t.Layout+".html").Funcs(t.funcMap).Render(t.Name+".html", t.Data, t.Request, t.Writer)
-		if err != nil {
-			return nil, errors.Wrap(err, "mail/render layout (html) failed")
-		}
-		email.HTML = string(result)
-
-		if email.HTML == "" {
-			result, err := mailer.Config.Render.Layout(t.Layout).Funcs(t.funcMap).Render(t.Name, t.Data, t.Request, t.Writer)
-			if err != nil {
-				return nil, errors.Wrap(err, "mail/render layout (fallback) failed")
-			}
+		if result, err := mailer.Config.Render.Layout(t.Layout+".html").Funcs(t.funcMap).Render(t.Name+".html", t.Data, t.Request, t.Writer); err == nil {
+			email.HTML = string(result)
+		} else if result, err := mailer.Config.Render.Layout(t.Layout).Funcs(t.funcMap).Render(t.Name, t.Data, t.Request, t.Writer); err == nil {
 			email.HTML = string(result)
 		}
 	} else {
-		result, err := mailer.Config.Render.Funcs(t.funcMap).Render(t.Name+".text", t.Data, t.Request, t.Writer)
-		if err != nil {
-			return nil, errors.Wrap(err, "mail/render (txt) failed")
+		if result, err := mailer.Config.Render.Funcs(t.funcMap).Render(t.Name+".text", t.Data, t.Request, t.Writer); err == nil {
+			email.Text = string(result)
 		}
-		email.Text = string(result)
 
-		result, err = mailer.Config.Render.Funcs(t.funcMap).Render(t.Name+".html", t.Data, t.Request, t.Writer)
-		if err != nil {
-			return nil, errors.Wrap(err, "mail/render (html) failed")
-		}
-		email.HTML = string(result)
-
-		if email.HTML == "" {
-			result, err := mailer.Config.Render.Funcs(t.funcMap).Render(t.Name, t.Data, t.Request, t.Writer)
-			if err != nil {
-				return nil, errors.Wrap(err, "mail/render (fallback) failed")
-			}
+		if result, err := mailer.Config.Render.Funcs(t.funcMap).Render(t.Name+".html", t.Data, t.Request, t.Writer); err == nil {
+			email.HTML = string(result)
+		} else if result, err := mailer.Config.Render.Funcs(t.funcMap).Render(t.Name, t.Data, t.Request, t.Writer); err == nil {
 			email.HTML = string(result)
 		}
 	}
 
-	return &email, nil
+	return email
 }
