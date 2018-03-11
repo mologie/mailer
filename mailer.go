@@ -40,8 +40,8 @@ func NewChecked(config *Config) (*Mailer, error) {
 		config.AssetFS = assetfs.AssetFS().NameSpace("mailer")
 	}
 
-	if err := config.AssetFS.RegisterPath("app/views/auth/mail"); err != nil {
-		return nil, errors.Wrap(err, "Mailer: could not registerPath")
+	if err := config.AssetFS.RegisterPath("app/views/mailers"); err != nil {
+		return nil, errors.Wrap(err, "mailer: could not register path")
 	}
 
 	if config.Render == nil {
